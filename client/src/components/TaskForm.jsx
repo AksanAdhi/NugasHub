@@ -1,12 +1,11 @@
 import { useState } from 'react'
 import { useDataStore } from '../store/dataStore'
-import { students } from '../data/users'
+import { getUser } from '../data/users'
+import { getProjectUserIds } from '../utils/helpers'
 
-// projects : daftar project yang boleh dipilih
-// projectId: kalau diisi, pilihan project disembunyikan (dipakai di halaman detail)
-// task     : kalau diisi, form berubah jadi mode Edit
 export default function TaskForm({ projects, projectId, task, onClose }) {
   const { addTask, updateTask } = useDataStore()
+  const members = useDataStore((s) => s.members)
 
   const [form, setForm] = useState({
     title: task?.title ?? '',
@@ -15,7 +14,17 @@ export default function TaskForm({ projects, projectId, task, onClose }) {
     deadline: task?.deadline ?? '',
   })
 
+  // Pilihan penanggung jawab = owner + anggota dari project yang dipilih
+  const selectedProject = projects.find((p) => p.id === Number(form.projectId))
+  const assignable = selectedProject
+    ? getProjectUserIds(selectedProject, members).map(getUser).filter(Boolean)
+    : []
+
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value })
+
+  // Kalau project diganti, penanggung jawab direset (anggotanya berbeda)
+  const handleProjectChange = (e) =>
+    setForm({ ...form, projectId: e.target.value, assigneeId: '' })
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -41,7 +50,7 @@ export default function TaskForm({ projects, projectId, task, onClose }) {
           onChange={handleChange} className={input} required />
 
         {!projectId && (
-          <select name="projectId" value={form.projectId} onChange={handleChange} className={input}>
+          <select name="projectId" value={form.projectId} onChange={handleProjectChange} className={input}>
             {projects.map((p) => (
               <option key={p.id} value={p.id}>{p.title}</option>
             ))}
@@ -50,8 +59,8 @@ export default function TaskForm({ projects, projectId, task, onClose }) {
 
         <select name="assigneeId" value={form.assigneeId} onChange={handleChange} className={input}>
           <option value="">-- Belum ditugaskan --</option>
-          {students.map((s) => (
-            <option key={s.id} value={s.id}>{s.name}</option>
+          {assignable.map((u) => (
+            <option key={u.id} value={u.id}>{u.name}</option>
           ))}
         </select>
 

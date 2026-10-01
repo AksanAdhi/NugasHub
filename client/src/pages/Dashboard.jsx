@@ -2,6 +2,8 @@ import { Link } from 'react-router-dom'
 import { useMyData } from '../hooks/useMyData'
 import { getProgress, isOverdue } from '../utils/helpers'
 import StatusBadge from '../components/StatusBadge'
+import StatusPieChart from '../components/StatusPieChart'
+import ProgressBarChart from '../components/ProgressBarChart'
 
 function Card({ label, value, color = 'text-blue-600' }) {
   return (
@@ -9,6 +11,15 @@ function Card({ label, value, color = 'text-blue-600' }) {
       <p className="text-sm text-gray-500">{label}</p>
       <p className={`text-3xl font-bold ${color}`}>{value}</p>
     </div>
+  )
+}
+
+function Section({ title, children }) {
+  return (
+    <section>
+      <h2 className="font-semibold mb-2">{title}</h2>
+      <div className="bg-white rounded-xl shadow p-4">{children}</div>
+    </section>
   )
 }
 
@@ -33,6 +44,15 @@ export default function Dashboard() {
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
+        <Section title="Status task">
+          <StatusPieChart tasks={tasks} />
+        </Section>
+        <Section title="Progress per project">
+          <ProgressBarChart projects={projects} tasks={tasks} />
+        </Section>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-6">
         <section>
           <h2 className="font-semibold mb-2">Deadline terdekat</h2>
           <div className="bg-white rounded-xl shadow divide-y">
@@ -50,7 +70,7 @@ export default function Dashboard() {
         </section>
 
         <section>
-          <h2 className="font-semibold mb-2">Progress project</h2>
+          <h2 className="font-semibold mb-2">Daftar project</h2>
           <div className="bg-white rounded-xl shadow divide-y">
             {projects.length === 0 && <p className="p-4 text-sm text-gray-400">Belum ada project.</p>}
             {projects.map((p) => (
